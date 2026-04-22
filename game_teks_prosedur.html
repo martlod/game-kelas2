@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Teks Prosedur – Kelas 2 SD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap');
+
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --accent: #38bdf8;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --subtext: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  /* Stars background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 15%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 80% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.2) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(28px, 5vw, 48px);
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-size: clamp(13px, 2vw, 16px);
+    color: var(--subtext);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Score bar */
+  .scorebar {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+  }
+
+  .score-box {
+    background: var(--card);
+    border: 2px solid rgba(56,189,248,0.2);
+    border-radius: 16px;
+    padding: 10px 24px;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .score-box .label {
+    font-size: 11px;
+    color: var(--subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .score-box .value {
+    font-family: 'Fredoka One', cursive;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-text {
+    text-align: right;
+    font-size: 12px;
+    color: var(--subtext);
+    margin-top: 4px;
+  }
+
+  /* Game area */
+  .game-area {
+    width: 100%;
+    max-width: 760px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Screen: landing */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Landing */
+  .landing {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .game-select {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+
+  .game-card {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 24px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .game-card:hover, .game-card.selected {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(56,189,248,0.2);
+  }
+
+  .game-card .icon { font-size: 40px; margin-bottom: 10px; }
+  .game-card .title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .game-card .desc { font-size: 12px; color: var(--subtext); }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    border: none;
+    color: #0f172a;
+    font-family: 'Fredoka One', cursive;
+    font-size: 22px;
+    padding: 16px 48px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(56,189,248,0.3);
+  }
+
+  .btn-start:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(56,189,248,0.4);
+  }
+
+  /* Question card */
+  .q-card {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 20px;
+    animation: slideIn 0.4s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    color: #0f172a;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .q-text {
+    font-size: clamp(16px, 3vw, 22px);
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: 24px;
+  }
+
+  /* Pilihan Ganda */
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 500px) {
+    .choices { grid-template-columns: 1fr; }
+  }
+
+  .choice-btn {
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px 20px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(56,189,248,0.08);
+    transform: translateX(4px);
+  }
+
+  .choice-btn.correct {
+    border-color: var(--green);
+    background: rgba(74,222,128,0.12);
+    color: var(--green);
+  }
+
+  .choice-btn.wrong {
+    border-color: var(--red);
+    background: rgba(248,113,113,0.12);
+    color: var(--red);
+  }
+
+  .choice-letter {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  /* Unjumble */
+  .unjumble-area {
+    margin-top: 8px;
+  }
+
+  .answer-slots {
+    min-height: 60px;
+    background: rgba(255,255,255,0.04);
+    border: 2px dashed rgba(56,189,248,0.3);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+
+  .word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .word-chip {
+    background: rgba(56,189,248,0.12);
+    border: 2px solid rgba(56,189,248,0.3);
+    border-radius: 99px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    color: var(--accent);
+  }
+
+  .word-chip:hover {
+    background: rgba(56,189,248,0.25);
+    transform: scale(1.05);
+  }
+
+  .word-chip.placed {
+    background: rgba(167,139,250,0.15);
+    border-color: rgba(167,139,250,0.4);
+    color: var(--purple);
+  }
+
+  .word-chip.correct-chip {
+    background: rgba(74,222,128,0.15);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .word-chip.wrong-chip {
+    background: rgba(248,113,113,0.15);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* Feedback */
+  .feedback {
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .feedback.show { display: flex; }
+  .feedback.ok { background: rgba(74,222,128,0.15); border: 2px solid var(--green); color: var(--green); }
+  .feedback.err { background: rgba(248,113,113,0.15); border: 2px solid var(--red); color: var(--red); }
+
+  .btn-next {
+    background: var(--accent);
+    border: none;
+    color: #0f172a;
+    font-family: 'Fredoka One', cursive;
+    font-size: 18px;
+    padding: 12px 32px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .btn-next.show { display: inline-block; }
+  .btn-next:hover { transform: scale(1.05); }
+
+  .btn-check {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    color: #0f172a;
+    font-family: 'Fredoka One', cursive;
+    font-size: 18px;
+    padding: 12px 32px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 8px;
+  }
+
+  .btn-check:hover { transform: scale(1.05); }
+  .btn-reset {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.15);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover { background: rgba(255,255,255,0.12); }
+
+  /* Result screen */
+  .result-screen {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .result-emoji {
+    font-size: 80px;
+    margin-bottom: 16px;
+    animation: bounce 0.6s ease;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-20px); }
+  }
+
+  .result-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(32px, 6vw, 56px);
+    background: linear-gradient(135deg, var(--yellow), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .result-score {
+    font-size: clamp(18px, 3vw, 24px);
+    color: var(--subtext);
+    margin-bottom: 32px;
+  }
+
+  .result-score span {
+    color: var(--accent);
+    font-weight: 900;
+    font-size: 1.3em;
+  }
+
+  .stars { font-size: 40px; margin-bottom: 24px; }
+
+  .btn-restart {
+    background: linear-gradient(135deg, var(--green), #16a34a);
+    border: none;
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 20px;
+    padding: 14px 40px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 8px 24px rgba(74,222,128,0.3);
+  }
+  .btn-restart:hover { transform: scale(1.05); }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎮 Game Teks Prosedur</div>
+  <div class="subtitle">Kelas 2 SD · Bahasa Indonesia · BAB 7</div>
+</header>
+
+<div class="scorebar">
+  <div class="score-box">
+    <div class="label">Skor</div>
+    <div class="value" id="score">0</div>
+  </div>
+  <div class="score-box">
+    <div class="label">Benar</div>
+    <div class="value" id="correct-count" style="color:var(--green)">0</div>
+  </div>
+  <div class="score-box">
+    <div class="label">Salah</div>
+    <div class="value" id="wrong-count" style="color:var(--red)">0</div>
+  </div>
+</div>
+
+<div class="progress-wrap" id="progress-wrap" style="display:none">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-text" id="progress-text">Soal 0 dari 0</div>
+</div>
+
+<div class="game-area">
+
+  <!-- SCREEN: Landing -->
+  <div class="screen active" id="screen-landing">
+    <div class="landing">
+      <p style="font-size:16px;color:var(--subtext);margin-bottom:24px">Pilih jenis permainan, lalu tekan <strong style="color:var(--text)">Mulai</strong>!</p>
+      <div class="game-select">
+        <div class="game-card selected" onclick="selectGame('quiz')" id="card-quiz">
+          <div class="icon">🧠</div>
+          <div class="title">Kuis Pilihan Ganda</div>
+          <div class="desc">Pilih jawaban yang benar dari 4 pilihan</div>
+        </div>
+        <div class="game-card" onclick="selectGame('unjumble')" id="card-unjumble">
+          <div class="icon">🔀</div>
+          <div class="title">Urutkan Kalimat</div>
+          <div class="desc">Susun kata-kata menjadi kalimat prosedur yang benar</div>
+        </div>
+        <div class="game-card" onclick="selectGame('match')" id="card-match">
+          <div class="icon">🧩</div>
+          <div class="title">Cocokkan Gambar</div>
+          <div class="desc">Pasangkan alat kebersihan dengan kegunaannya</div>
+        </div>
+      </div>
+      <button class="btn-start" onclick="startGame()">▶ Mulai Game!</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Quiz -->
+  <div class="screen" id="screen-quiz">
+    <div class="q-card" id="quiz-card">
+      <div class="q-badge" id="quiz-badge">Pilihan Ganda</div>
+      <div class="q-text" id="quiz-question"></div>
+      <div class="choices" id="quiz-choices"></div>
+    </div>
+    <div class="feedback" id="quiz-feedback"></div>
+    <button class="btn-next" id="quiz-next" onclick="nextQuestion()">Soal Berikutnya →</button>
+  </div>
+
+  <!-- SCREEN: Unjumble -->
+  <div class="screen" id="screen-unjumble">
+    <div class="q-card">
+      <div class="q-badge">🔀 Urutkan Kalimat</div>
+      <div class="q-text" id="unjumble-instruction">Susun kata-kata di bawah ini menjadi langkah prosedur yang benar!</div>
+      <div class="unjumble-area">
+        <p style="font-size:12px;color:var(--subtext);margin-bottom:8px">Kalimat jawabanmu:</p>
+        <div class="answer-slots" id="answer-slots"></div>
+        <p style="font-size:12px;color:var(--subtext);margin-bottom:8px">Pilih kata:</p>
+        <div class="word-bank" id="word-bank"></div>
+      </div>
+    </div>
+    <div class="feedback" id="unjumble-feedback"></div>
+    <div style="margin-top:8px">
+      <button class="btn-check" onclick="checkUnjumble()">✓ Cek Jawaban</button>
+      <button class="btn-reset" onclick="resetUnjumble()">↩ Ulang</button>
+      <button class="btn-next" id="unjumble-next" onclick="nextQuestion()" style="margin-left:8px">Soal Berikutnya →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Match -->
+  <div class="screen" id="screen-match">
+    <div class="q-card">
+      <div class="q-badge">🧩 Cocokkan!</div>
+      <div class="q-text">Klik alat, lalu klik kegunaannya yang cocok!</div>
+      <div id="match-area" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px"></div>
+    </div>
+    <div class="feedback" id="match-feedback"></div>
+    <button class="btn-next" id="match-next" onclick="nextQuestion()" style="margin-top:8px">Soal Berikutnya →</button>
+  </div>
+
+  <!-- SCREEN: Result -->
+  <div class="screen" id="screen-result">
+    <div class="result-screen">
+      <div class="result-emoji" id="result-emoji">🏆</div>
+      <div class="stars" id="result-stars">⭐⭐⭐</div>
+      <div class="result-title" id="result-title">Luar Biasa!</div>
+      <div class="result-score" id="result-score">Kamu menjawab benar <span>0</span> dari <span>0</span> soal</div>
+      <button class="btn-restart" onclick="restartGame()">🔄 Main Lagi</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const quizData = [
+  { q: "Apa langkah PERTAMA dalam mencuci tangan yang benar?", choices: ["Keringkan tangan dengan handuk", "Basahi tangan dengan air mengalir", "Oleskan sabun ke tangan", "Bilas tangan hingga bersih"], answer: 1 },
+  { q: "Setelah membasahi tangan, apa yang harus dilakukan selanjutnya?", choices: ["Keringkan dengan handuk", "Gosok punggung tangan", "Oleskan sabun dan gosok rata", "Bilas dengan air dingin"], answer: 2 },
+  { q: "Berapa lama kita harus menggosok tangan saat mencuci tangan?", choices: ["5 detik", "10 detik", "20 detik atau lebih", "1 menit penuh"], answer: 2 },
+  { q: "Apa tujuan dari teks prosedur?", choices: ["Menceritakan pengalaman", "Memberikan langkah-langkah melakukan sesuatu", "Mendeskripsikan suatu benda", "Mengungkapkan perasaan"], answer: 1 },
+  { q: "Setelah menyapu lantai, langkah selanjutnya adalah...", choices: ["Menyiram lantai", "Kumpulkan sampah ke dalam pengki lalu buang", "Lap lantai dengan kain basah", "Simpan sapu di gudang"], answer: 1 },
+  { q: "Kata yang biasa dipakai dalam teks prosedur adalah...", choices: ["Adalah, merupakan, yaitu", "Pertama, kemudian, selanjutnya, terakhir", "Sedangkan, namun, tetapi", "Karena, sehingga, akibatnya"], answer: 1 },
+  { q: "Manakah yang BUKAN termasuk alat kebersihan?", choices: ["Sapu", "Pengki", "Pensil", "Lap"], answer: 2 },
+  { q: "Dalam teks prosedur membuat minuman, langkah 'Tuangkan air panas ke dalam gelas' termasuk bagian...", choices: ["Tujuan", "Bahan-bahan", "Langkah-langkah", "Kesimpulan"], answer: 2 },
+  { q: "Apa yang kita lakukan SETELAH menggosok gigi?", choices: ["Siapkan sikat gigi", "Oleskan pasta gigi", "Kumur dan bilas mulut", "Gosok gigi dengan kencang"], answer: 2 },
+  { q: "Teks prosedur berisi instruksi untuk...", choices: ["Menggambarkan pemandangan alam", "Melakukan suatu kegiatan secara urut", "Menceritakan kisah hewan", "Menulis surat kepada teman"], answer: 1 },
+];
+
+const unjumbleData = [
+  { instruction: "Cara Mencuci Tangan – Langkah 1", words: ["Basahi", "tangan", "dengan", "air", "mengalir"], answer: ["Basahi", "tangan", "dengan", "air", "mengalir"] },
+  { instruction: "Cara Mencuci Tangan – Langkah 2", words: ["Oleskan", "sabun", "lalu", "gosok", "rata"], answer: ["Oleskan", "sabun", "lalu", "gosok", "rata"] },
+  { instruction: "Cara Mencuci Tangan – Langkah 3", words: ["tangan", "Bilas", "bersih", "hingga", "mengalir", "dengan", "air"], answer: ["Bilas", "tangan", "dengan", "air", "mengalir", "hingga", "bersih"] },
+  { instruction: "Cara Menyapu Lantai – Langkah 1", words: ["Ambil", "sapu", "dari", "tempatnya"], answer: ["Ambil", "sapu", "dari", "tempatnya"] },
+  { instruction: "Cara Menyapu Lantai – Langkah 2", words: ["sudut", "Mulai", "dari", "menyapu", "ke", "tengah"], answer: ["Mulai", "menyapu", "dari", "sudut", "ke", "tengah"] },
+  { instruction: "Cara Menyapu Lantai – Langkah 3", words: ["Kumpulkan", "ke", "sampah", "tempat", "sampah"], answer: ["Kumpulkan", "sampah", "ke", "tempat", "sampah"] },
+  { instruction: "Cara Menggosok Gigi – Langkah 1", words: ["pasta", "Oleskan", "gigi", "ke", "sikat", "gigi"], answer: ["Oleskan", "pasta", "gigi", "ke", "sikat", "gigi"] },
+  { instruction: "Cara Menggosok Gigi – Langkah 2", words: ["Gosok", "seluruh", "dengan", "gigi", "merata"], answer: ["Gosok", "gigi", "dengan", "merata"] },
+];
+
+const matchData = [
+  { pairs: [
+    { item: "🧹 Sapu", match: "Membersihkan lantai dari debu dan sampah" },
+    { item: "🧴 Sabun", match: "Membunuh kuman di tangan" },
+    { item: "🗑️ Tempat Sampah", match: "Membuang sampah agar tidak berserakan" },
+    { item: "🧽 Spons", match: "Membersihkan piring dan peralatan makan" },
+  ]},
+  { pairs: [
+    { item: "🪣 Ember", match: "Menampung air untuk mengepel" },
+    { item: "🧺 Pengki", match: "Mengumpulkan sampah hasil sapu" },
+    { item: "🚿 Air mengalir", match: "Membilas sabun dari tangan" },
+    { item: "🪥 Sikat Gigi", match: "Membersihkan gigi dari sisa makanan" },
+  ]},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentGame = 'quiz';
+let currentIdx = 0;
+let score = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let answered = false;
+let questions = [];
+
+// Unjumble state
+let answerArr = [];
+let bankArr = [];
+
+// Match state
+let matchSelected = null;
+let matchDone = 0;
+
+function selectGame(type) {
+  currentGame = type;
+  document.querySelectorAll('.game-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + type).classList.add('selected');
+}
+
+function startGame() {
+  score = 0; correctCount = 0; wrongCount = 0; currentIdx = 0;
+  updateScorebar();
+  document.getElementById('progress-wrap').style.display = 'block';
+
+  if (currentGame === 'quiz') {
+    questions = shuffle([...quizData]).slice(0, 8);
+    showScreen('screen-quiz');
+    showQuiz();
+  } else if (currentGame === 'unjumble') {
+    questions = shuffle([...unjumbleData]).slice(0, 6);
+    showScreen('screen-unjumble');
+    showUnjumble();
+  } else if (currentGame === 'match') {
+    questions = shuffle([...matchData]);
+    showScreen('screen-match');
+    showMatch();
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateScorebar() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('correct-count').textContent = correctCount;
+  document.getElementById('wrong-count').textContent = wrongCount;
+}
+
+function updateProgress() {
+  const total = questions.length;
+  const pct = Math.round((currentIdx / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `Soal ${Math.min(currentIdx + 1, total)} dari ${total}`;
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────────────────────
+function showQuiz() {
+  if (currentIdx >= questions.length) { showResult(); return; }
+  updateProgress();
+  answered = false;
+  const q = questions[currentIdx];
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-badge').textContent = `❓ Soal ${currentIdx + 1} dari ${questions.length}`;
+  const choicesEl = document.getElementById('quiz-choices');
+  choicesEl.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-letter">${letters[i]}</span>${c}`;
+    btn.onclick = () => selectChoice(i, btn);
+    choicesEl.appendChild(btn);
+  });
+  setFeedback('quiz-feedback', '', '');
+  document.getElementById('quiz-next').classList.remove('show');
+}
+
+function selectChoice(i, btn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentIdx];
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(b => b.disabled = true);
+  if (i === q.answer) {
+    btn.classList.add('correct');
+    score += 10; correctCount++;
+    setFeedback('quiz-feedback', 'ok', '🎉 Benar! Kamu hebat!');
+    spawnConfetti();
+  } else {
+    btn.classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+    wrongCount++;
+    setFeedback('quiz-feedback', 'err', `❌ Kurang tepat. Jawaban yang benar: ${q.choices[q.answer]}`);
+  }
+  updateScorebar();
+  document.getElementById('quiz-next').classList.add('show');
+}
+
+// ── UNJUMBLE ──────────────────────────────────────────────────────────────────
+function showUnjumble() {
+  if (currentIdx >= questions.length) { showResult(); return; }
+  updateProgress();
+  const q = questions[currentIdx];
+  document.getElementById('unjumble-instruction').textContent = `📋 ${q.instruction}`;
+  answerArr = [];
+  bankArr = shuffle([...q.words]);
+  renderUnjumble();
+  setFeedback('unjumble-feedback', '', '');
+  document.getElementById('unjumble-next').classList.remove('show');
+}
+
+function renderUnjumble() {
+  const slots = document.getElementById('answer-slots');
+  const bank  = document.getElementById('word-bank');
+  slots.innerHTML = '';
+  bank.innerHTML  = '';
+
+  answerArr.forEach((w, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'word-chip placed';
+    chip.textContent = w;
+    chip.onclick = () => { bankArr.push(answerArr.splice(i, 1)[0]); renderUnjumble(); };
+    slots.appendChild(chip);
+  });
+
+  if (answerArr.length === 0) {
+    const ph = document.createElement('span');
+    ph.style.cssText = 'color:var(--subtext);font-size:13px';
+    ph.textContent = 'Tap kata di bawah untuk menyusun kalimat...';
+    slots.appendChild(ph);
+  }
+
+  bankArr.forEach((w, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'word-chip';
+    chip.textContent = w;
+    chip.onclick = () => { answerArr.push(bankArr.splice(i, 1)[0]); renderUnjumble(); };
+    bank.appendChild(chip);
+  });
+}
+
+function checkUnjumble() {
+  const q = questions[currentIdx];
+  const userAns = answerArr.join(' ');
+  const correctAns = q.answer.join(' ');
+  if (userAns === correctAns) {
+    score += 10; correctCount++;
+    setFeedback('unjumble-feedback', 'ok', '🎉 Benar! Susunannya tepat!');
+    spawnConfetti();
+    // highlight chips green
+    document.querySelectorAll('#answer-slots .word-chip').forEach(c => { c.classList.add('correct-chip'); c.onclick = null; });
+    document.querySelectorAll('#word-bank .word-chip').forEach(c => c.style.display='none');
+  } else {
+    wrongCount++;
+    setFeedback('unjumble-feedback', 'err', `❌ Belum tepat. Jawaban: "${correctAns}"`);
+    document.querySelectorAll('#answer-slots .word-chip').forEach(c => c.classList.add('wrong-chip'));
+  }
+  updateScorebar();
+  document.getElementById('unjumble-next').classList.add('show');
+}
+
+function resetUnjumble() {
+  const q = questions[currentIdx];
+  answerArr = [];
+  bankArr = shuffle([...q.words]);
+  renderUnjumble();
+  setFeedback('unjumble-feedback','','');
+  document.getElementById('unjumble-next').classList.remove('show');
+}
+
+// ── MATCH ─────────────────────────────────────────────────────────────────────
+function showMatch() {
+  if (currentIdx >= questions.length) { showResult(); return; }
+  updateProgress();
+  const q = questions[currentIdx];
+  matchSelected = null;
+  matchDone = 0;
+  const area = document.getElementById('match-area');
+  area.innerHTML = '';
+
+  const items = shuffle(q.pairs.map(p => ({ text: p.item, type: 'item', match: p.match, matched: false })));
+  const matches = shuffle(q.pairs.map(p => ({ text: p.match, type: 'match', match: p.item, matched: false })));
+
+  [...items, ...matches].forEach(obj => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.style.cssText = 'font-size:13px;padding:12px 14px;';
+    btn.textContent = obj.text;
+    btn.dataset.type = obj.type;
+    btn.dataset.match = obj.match;
+    btn.dataset.text = obj.text;
+    btn.onclick = () => handleMatch(btn, obj, q.pairs.length);
+    area.appendChild(btn);
+  });
+
+  setFeedback('match-feedback', '', '');
+  document.getElementById('match-next').classList.remove('show');
+}
+
+function handleMatch(btn, obj, total) {
+  if (btn.disabled) return;
+
+  if (!matchSelected) {
+    if (matchSelected === btn) return;
+    btn.style.borderColor = 'var(--yellow)';
+    btn.style.background = 'rgba(251,191,36,0.1)';
+    matchSelected = { btn, obj };
+  } else {
+    const prev = matchSelected;
+    // Check if types differ and they match each other
+    if (prev.obj.type !== obj.type && prev.obj.match === obj.text && obj.match === prev.obj.text) {
+      // Correct match
+      [prev.btn, btn].forEach(b => {
+        b.style.borderColor = 'var(--green)';
+        b.style.background = 'rgba(74,222,128,0.12)';
+        b.style.color = 'var(--green)';
+        b.disabled = true;
+      });
+      matchDone++;
+      if (matchDone === total) {
+        score += 10; correctCount++;
+        updateScorebar();
+        setFeedback('match-feedback', 'ok', '🎉 Semua pasangan cocok! Hebat!');
+        spawnConfetti();
+        document.getElementById('match-next').classList.add('show');
+      }
+    } else {
+      // Wrong
+      [prev.btn, btn].forEach(b => {
+        b.style.borderColor = 'var(--red)';
+        b.style.background = 'rgba(248,113,113,0.12)';
+      });
+      setTimeout(() => {
+        [prev.btn, btn].forEach(b => {
+          b.style.borderColor = '';
+          b.style.background = '';
+        });
+      }, 800);
+      wrongCount++;
+      updateScorebar();
+    }
+    matchSelected = null;
+  }
+}
+
+// ── NEXT / RESULT ─────────────────────────────────────────────────────────────
+function nextQuestion() {
+  currentIdx++;
+  if (currentGame === 'quiz') {
+    if (currentIdx >= questions.length) showResult();
+    else showQuiz();
+  } else if (currentGame === 'unjumble') {
+    if (currentIdx >= questions.length) showResult();
+    else showUnjumble();
+  } else if (currentGame === 'match') {
+    if (currentIdx >= questions.length) showResult();
+    else showMatch();
+  }
+}
+
+function showResult() {
+  showScreen('screen-result');
+  document.getElementById('progress-fill').style.width = '100%';
+  const total = questions.length;
+  const pct = correctCount / total;
+  let emoji, title, stars;
+  if (pct === 1)       { emoji='🏆'; title='Sempurna!'; stars='⭐⭐⭐'; }
+  else if (pct >= 0.7) { emoji='🎉'; title='Luar Biasa!'; stars='⭐⭐⭐'; }
+  else if (pct >= 0.5) { emoji='😊'; title='Bagus!'; stars='⭐⭐'; }
+  else                 { emoji='💪'; title='Terus Semangat!'; stars='⭐'; }
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-stars').textContent = stars;
+  document.getElementById('result-score').innerHTML =
+    `Kamu menjawab benar <span>${correctCount}</span> dari <span>${total}</span> soal dengan skor <span>${score}</span>`;
+  spawnConfetti(30);
+}
+
+function restartGame() {
+  score = 0; correctCount = 0; wrongCount = 0; currentIdx = 0;
+  updateScorebar();
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
+  showScreen('screen-landing');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function setFeedback(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'feedback' + (type ? ` show ${type}` : '');
+  el.textContent = msg;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function spawnConfetti(n = 20) {
+  const colors = ['#38bdf8','#4ade80','#fbbf24','#a78bfa','#f87171','#fb923c'];
+  for (let i = 0; i < n; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${Math.random()*100}vw;
+        top: 0;
+        background: ${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration: ${1.5 + Math.random() * 2}s;
+        animation-delay: ${Math.random() * 0.5}s;
+        transform: rotate(${Math.random()*360}deg);
+        width: ${6+Math.random()*8}px;
+        height: ${6+Math.random()*8}px;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 60);
+  }
+}
+</script>
+</body>
+</html>
