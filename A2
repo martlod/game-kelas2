@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Teks Prosedur – Kelas 2 SD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f172a;
+    font-family: 'Nunito', sans-serif;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  /* Background stars */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 10%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5%  65%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 35%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 90%, rgba(255,255,255,0.15) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+    animation: fadeDown 0.6s ease;
+  }
+
+  @keyframes fadeDown {
+    from { opacity:0; transform: translateY(-16px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(26px, 5vw, 46px);
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-size: clamp(12px, 2vw, 15px);
+    color: #94a3b8;
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .badges {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .badge {
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 99px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #38bdf8;
+    letter-spacing: 0.03em;
+  }
+
+  /* Iframe wrapper */
+  .iframe-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 820px;
+    background: #1e293b;
+    border: 2px solid rgba(56,189,248,0.25);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.05),
+      0 24px 64px rgba(0,0,0,0.5),
+      0 0 80px rgba(56,189,248,0.08);
+    animation: fadeUp 0.7s ease 0.2s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(24px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  /* Top bar like a browser */
+  .iframe-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #0f172a;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red    { background: #f87171; }
+  .dot.yellow { background: #fbbf24; }
+  .dot.green  { background: #4ade80; }
+
+  .url-bar {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #64748b;
+    margin-left: 8px;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 480px;
+    border: none;
+  }
+
+  /* Info row */
+  .info-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.7s ease 0.4s both;
+  }
+
+  .info-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 110px;
+  }
+
+  .info-card .ic { font-size: 24px; margin-bottom: 6px; }
+  .info-card .il {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+  .info-card .iv {
+    font-size: 14px;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+
+  /* Tip box */
+  .tip-box {
+    margin-top: 20px;
+    max-width: 820px;
+    width: 100%;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: #fbbf24;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.7s ease 0.5s both;
+  }
+
+  footer {
+    margin-top: 28px;
+    font-size: 12px;
+    color: #334155;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  /* Fullscreen btn */
+  .btn-fullscreen {
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    border: none;
+    color: #0f172a;
+    font-family: 'Fredoka One', cursive;
+    font-size: 15px;
+    padding: 10px 24px;
+    border-radius: 99px;
+    cursor: pointer;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 20px rgba(56,189,248,0.25);
+    animation: fadeUp 0.7s ease 0.6s both;
+  }
+  .btn-fullscreen:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 28px rgba(56,189,248,0.35);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎮 Game Teks Prosedur</div>
+  <div class="subtitle">SD Islam Tunas Cendekia · Kelas 2 · BAB 7</div>
+  <div class="badges">
+    <span class="badge">🔀 Unjumble</span>
+    <span class="badge">📋 Teks Prosedur</span>
+    <span class="badge">🧼 Mencuci Tangan</span>
+  </div>
+</header>
+
+<div class="iframe-wrap">
+  <div class="iframe-topbar">
+    <div class="dot red"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
+    <div class="url-bar">wordwall.net · Urutkan cara mencuci tangan</div>
+  </div>
+  <iframe
+    src="https://wordwall.net/embed/cf6bc20659d744fbb2fa6d671af402e3?themeId=45&templateId=72&fontStackId=0"
+    width="500"
+    height="380"
+    frameborder="0"
+    allowfullscreen
+    style="width:100%; height:480px;">
+  </iframe>
+</div>
+
+<button class="btn-fullscreen" onclick="goFullscreen()">⛶ Layar Penuh</button>
+
+<div class="info-row">
+  <div class="info-card">
+    <div class="ic">📖</div>
+    <div class="il">Mata Pelajaran</div>
+    <div class="iv">Bahasa Indonesia</div>
+  </div>
+  <div class="info-card">
+    <div class="ic">🏫</div>
+    <div class="il">Kelas</div>
+    <div class="iv">2 SD · Fase A</div>
+  </div>
+  <div class="info-card">
+    <div class="ic">📝</div>
+    <div class="il">Materi</div>
+    <div class="iv">Teks Prosedur</div>
+  </div>
+  <div class="info-card">
+    <div class="ic">🎯</div>
+    <div class="il">Mode Game</div>
+    <div class="iv">Unjumble</div>
+  </div>
+</div>
+
+<div class="tip-box">
+  💡 <span><strong>Tips Smart TV:</strong> Gunakan tombol remote untuk drag & drop kata. Klik START untuk memulai, lalu susun kata-kata menjadi langkah yang benar!</span>
+</div>
+
+<footer>
+  SD Islam Tunas Cendekia · Cantika Rofiqoh Azhar, S.Pd · TA 2025/2026
+</footer>
+
+<script>
+function goFullscreen() {
+  const iframe = document.querySelector('iframe');
+  if (iframe.requestFullscreen) iframe.requestFullscreen();
+  else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+  else if (iframe.mozRequestFullScreen) iframe.mozRequestFullScreen();
+}
+</script>
+</body>
+</html>
